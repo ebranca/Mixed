@@ -389,6 +389,9 @@ data["NUMBER_LAYERS"] = data["NUMBER_LAYERS"].astype('int')
 
 ###############################################################################
 
+variables = ['LATITUDE_CIRCLE_IMAGE', 'LONGITUDE_CIRCLE_IMAGE', 'DIAM_CIRCLE_IMAGE']
+typecheck(data, select=variables)
+
 print("Data Statistics - Dataframe")
 print(descriptive(data, 'df'))
 print()
@@ -415,8 +418,5 @@ print("Frequency Analysis - variable 'DIAM_CIRCLE_IMAGE'")
 nparray = data['DIAM_CIRCLE_IMAGE']
 diameter = freqency_table(nparray, 10)
 print(diameter)
-
-variables = ['LATITUDE_CIRCLE_IMAGE', 'LONGITUDE_CIRCLE_IMAGE', 'DIAM_CIRCLE_IMAGE']
-typecheck(data, select=variables)
 
 sys.exit(0)

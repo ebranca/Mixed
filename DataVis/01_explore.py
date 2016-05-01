@@ -11,112 +11,146 @@ import pandas as pd
 def typecheck(dataframe, select=None):
     import numbers
     import string
-
     # get column names
     columns = dataframe.columns.values
-
     # set result list
     # check each column
     for col in columns:
+        # if we want only specific columns, and column is not in list, skip
         if select and not (col in select):
             continue
+        # get series corresponding to column name
         series = dataframe[col]
+        # set counters
         nelem = 0
         nstring = 0
         nfloat = 0
         ninteger = 0
         nmissing = 0
         ninvalid = 0
+        # set column name as ascii text
         scol = ascii(col)
         # check each element in column
         for elem in series:
             # increment element counter
             nelem = nelem + 1
             # convert string to lower + remove leade/trail spaces + remove line end
-            elem = str(elem).lower().strip().strip("\r\n").strip("\r").strip("\n")
+            elem = ascii(elem).strip().strip("\r\n").strip("\r").strip("\n")
             if (len(elem) > 0):
                 # check if element as string is correct or not
                 if (elem.isprintable()):
-                        # check if alphanumeric (has only letters + numbers)
-                        if (elem.isalpha()):
+                    xelem = elem
+                    for c in ["0","1","2","3","4","5","6","7","8","9","L","e","+","-","."]:
+                        xelem=xelem.replace(c,"")
+                    # if element without all valid chars has size
+                    if (len(xelem) > 0):
+                        # mark as string
+                        nstring = nstring + 1
+                    # if element without all valid chars has NO size
+                    else:
+                        tfloat = False
+                        tint = False
+                        # test for float conversion
+                        try:
+                            felem = float(elem)
+                            del(felem)
+                            tfloat = True
+                        except:
+                            tfloat = False
+                        # test for int conversion
+                        try:
+                            ielem = int(elem)
+                            del(ielem)
+                            tint = True
+                        except:
+                            tint = False
+                        # if both test fails, mark string
+                        if (tfloat == False) and (tint == False):
                             nstring = nstring + 1
-                        elif (elem.isalnum()):
-                            nstring = nstring + 1
+                        # now we should have a number
                         else:
-                            try:
-                                # set element to float
+                            # check is string is a real number
+                            if (isinstance(float(elem), numbers.Real)):
+                                # check if integer using NEW "float(num).is_integer()"
+                                # https://docs.python.org/2/library/stdtypes.html#float.is_integer
+                                # https://docs.python.org/3/library/stdtypes.html#float.is_integer
+                                # convert to float
                                 elem = float(elem)
-                                # check if element is number
-                                if (isinstance(elem, numbers.Real)):
-                                    # check if integer using NEW "float(num).is_integer()"
-                                    # https://docs.python.org/2/library/stdtypes.html#float.is_integer
-                                    # https://docs.python.org/3/library/stdtypes.html#float.is_integer
-                                    if (elem.is_integer()):
-                                        ninteger = ninteger + 1
-                                    else:
-                                        nfloat = nfloat + 1
+                                # test if float is an integer
+                                if (elem.is_integer()):
+                                    ninteger = ninteger + 1
+                                # otherwise it shoild only be a float
                                 else:
-                                    raise AssertionError("Unexpected element type.")
-
-                            except:
-                                nstring = nstring + 1
+                                    nfloat = nfloat + 1
+                            else:
+                                # if test fails something is wrong
+                                print(ascii(elem))
+                                raise ValueError("unexpected float format")
                 else:
                     # if strange stuff is present count as invalid
                     ninvalid = ninvalid + 1
             else:
                 # if element is empty set missing
                 nmissing = nmissing + 1
-
+        # calculate percentage
         nstringp = ((nstring / nelem) * 100)
         nfloatp = ((nfloat / nelem) * 100)
         nintegerp = ((ninteger / nelem) * 100)
         nmissingp = ((nmissing / nelem) * 100)
         ninvalidp = ((ninvalid / nelem) * 100)
-
+        # prepare strings
         res_string = "Strings: %s (%s%%)\n" % (nstring, nstringp)
         res_sint = "Integers: %s (%s%%)\n" % (ninteger, nintegerp)
         res_sfloat = "Floats: %s (%s%%)\n" % (nfloat, nfloatp)
         res_sinv = "Invalid: %s (%s%%)\n" % (ninvalid, ninvalidp)
         res_smiss = "Missing: %s (%s%%)\n" % (nmissing, nmissingp)
-
-        # get an idea of which kind of data we have
+        # check if we are missing anything
+        check = (nstring + ninteger + nfloat + ninvalid + nmissing)
+        if not (check == nelem):
+            print("Strings: %s" % (nstring,))
+            print("Integers: %s" % (ninteger,))
+            print("Floats: %s" % (nfloat,))
+            print("Invalid: %s" % (ninvalid,))
+            print("Missing: %s" % (nmissing,))
+            print("Not-Accoun: %s" % ((nelem - check),))
+            raise AssertionError("ERROR: Data not accounted")
+        # check if we are seeing nothing
+        if ((nstring + ninteger + nfloat + ninvalid + nmissing ) == 0):
+            print("Column Name: '%s' - No data detected" % (col,))
+            continue
+        # bases on stats prepare strings for suggestions
+        # if we have strings
         if (nstring > 0):
+            # is strings are the only data type provide suggestion
             if (nstring > 0) and ((ninteger + nfloat) == 0):
                 suggest = "Suggested variable type: Categorical\n"
-                commands = "Load dataset -> data = pandas.read_csv('filename_dataset')\n"
-                commands = commands + "Instruction (1) -> data['%s'] = data['%s'].astype('category')\n" % (col, col)
+                suggest = suggest + "Load dataset -> data = pandas.read_csv('filename_dataset')\n"
+                suggest = suggest + "Instruction (1) -> data['%s'] = data['%s'].astype('category')\n" % (col, col)
+            # is strings are mixed with other stuff, no guess can be made
             else:
                 suggest = "Suggested variable type: Unknown (both strings and numbers are present)\n"
+        # if no strings
         else:
+            # if we have ints but no floats,suggest to set as int
             if (ninteger > 0) and (nfloat == 0):
                 suggest = "Suggested variable type: Numerical (integer)\n"
-                commands = "Load dataset -> data = pandas.read_csv('filename_dataset')\n"
-                commands = commands + "Instruction (1) -> pandas.to_numeric(data['%s'], errors='coerce')\n" % (col,)
-                commands = commands + "Instruction (2) -> data['%s'] = data['%s'].astype('int')\n" % (col, col)
+                suggest = suggest + "Load dataset -> data = pandas.read_csv('filename_dataset')\n"
+                suggest = suggest + "Instruction (1) -> pandas.to_numeric(data['%s'], errors='coerce')\n" % (col,)
+                suggest = suggest + "Instruction (2) -> data['%s'] = data['%s'].astype('int')\n" % (col, col)
+            # with both ints and floats we set as float to avoind data loss
             else:
                 suggest = "Suggested variable type: Numerical (float)\n"
-                # get the list of instructions to format the variable
-                commands = "Load dataset -> data = pandas.read_csv('filename_dataset')\n"
-                commands = commands + "Instruction (1) -> pandas.to_numeric(data['%s'], errors='coerce')\n" % (col,)
-
-        if commands:
-            result = "Column Name: %s\n%s%s%s%s%s%s%s" % (scol,
-                                                          res_string,
-                                                          res_sint,
-                                                          res_sfloat,
-                                                          res_sinv,
-                                                          res_smiss,
-                                                          suggest,
-                                                          commands)
-        else:
-            result = "Column Name: %s\n%s%s%s%s%s%s" % (scol,
-                                                        res_string,
-                                                        res_sint,
-                                                        res_sfloat,
-                                                        res_sinv,
-                                                        res_smiss,
-                                                        suggest)
-
+                suggest = suggest + "Load dataset -> data = pandas.read_csv('filename_dataset')\n"
+                suggest = suggest + "Instruction (1) -> pandas.to_numeric(data['%s'], errors='coerce')\n" % (col,)
+        # if data type has been somhow guessed provide stats and suggestion
+        result = "Column Name: %s\n%s%s%s%s%s%s" % (scol,
+                                                    res_string,
+                                                    res_sint,
+                                                    res_sfloat,
+                                                    res_sinv,
+                                                    res_smiss,
+                                                    suggest)
+        # print to stdout the string with the results
         print(result)
 
 def descriptive(nparray, selection):

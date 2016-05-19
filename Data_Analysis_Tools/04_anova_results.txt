@@ -1,0 +1,52 @@
+Performing ANOVA analysys between 'DIAM_CIRCLE_IMAGE' and 'HEMISPHERE'
+
+                            OLS Regression Results
+==============================================================================
+Dep. Variable:      DIAM_CIRCLE_IMAGE   R-squared:                       0.002
+Model:                            OLS   Adj. R-squared:                  0.002
+Method:                 Least Squares   F-statistic:                     302.8
+Date:                Thu, 19 May 2016   Prob (F-statistic):          4.13e-132
+Time:                        16:27:25   Log-Likelihood:            -1.3717e+06
+No. Observations:              384343   AIC:                         2.743e+06
+Df Residuals:                  384340   BIC:                         2.743e+06
+Df Model:                           2
+Covariance Type:            nonrobust
+==========================================================================================
+                             coef    std err          t      P>|t|      [95.0% Conf. Int.]
+------------------------------------------------------------------------------------------
+Intercept                  2.4529      3.245      0.756      0.450        -3.907     8.813
+C(HEMISPHERE)[T.North]     0.6805      3.245      0.210      0.834        -5.680     7.041
+C(HEMISPHERE)[T.South]     1.3781      3.245      0.425      0.671        -4.982     7.738
+==============================================================================
+Omnibus:                   915159.189   Durbin-Watson:                   0.223
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):      58153754662.569
+Skew:                          23.550   Prob(JB):                         0.00
+Kurtosis:                    1908.032   Cond. No.                         503.
+==============================================================================
+
+Warnings:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+Means for 'DIAM_CIRCLE_IMAGE' by Hemisphere
+            DIAM_CIRCLE_IMAGE
+HEMISPHERE
+Equator              2.452857
+North                3.133406
+South                3.830986
+
+Standard Deviation for 'DIAM_CIRCLE_IMAGE' by Hemisphere
+            DIAM_CIRCLE_IMAGE
+HEMISPHERE
+Equator              1.555310
+North                6.989578
+South                9.476899
+
+Performing Tukey HSDT, or Honestly Significant Difference Test.
+Multiple Comparison of Means - Tukey HSD,FWER=0.05
+=============================================
+ group1 group2 meandiff  lower  upper  reject
+---------------------------------------------
+Equator North   0.6805  -6.9248 8.2859 False
+Equator South   1.3781  -6.2272 8.9834 False
+ North  South   0.6976   0.6311 0.764   True
+---------------------------------------------

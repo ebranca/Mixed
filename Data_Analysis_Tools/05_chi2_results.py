@@ -1,0 +1,308 @@
+This second week exercise was related to chi squared analysis and proved to be much more difficult than expected.
+
+As data source I am using the MARS crater data set and have decided to take into consideration two variables:
+HEMISPHERE: in which part of the planet craters are
+LAYERS: how many layers each crater has
+
+As none of these variables is categorical, I have used “LATITUDE_CIRCLE_IMAGE” and divided the data as follows:
+- South: value from -90 to 0 (-90 included, 0 excluded)
+- Equator: any value equal to 0
+- North:  value from 0 to 90 (0 excluded, 90 included)
+This allowed the creation of a new categorical variable called HEMISPHERE.
+
+Then used the variable “NUMBER_LAYERS”  and divided the data as follows:
+none: any value equal to 0
+single: any value equal to 1
+double: any value equal to 2
+multi: any value greater than 2
+So now we have two categorical variables we can use for a chi squared analysis. 
+
+In theory we were supposed to perform a chi squared analysis using python functions included in scipy and analyse the results, and that produced the following:
+chi squared: 1055.4272158327735
+p value: 9.1686330427084731e-225
+Degrees of freedom: 6
+Expected values:
+[6.25613059e-02, 1.50984928e-02, 6.64064130e+00, 2.81698899e-01]
+[1.35057347e+03, 3.25946262e+02, 1.43358164e+05, 6.08131584e+03]
+[2.08436397e+03, 5.03038640e+02, 2.21247195e+05, 9.38540247e+03]
+
+
+Results from chi squared seems fine but they are not, as the problem lies in the fact that we have, in the lists of expected values, elements with a negative sign as power function, meaning that the number is smaller than 1.
+
+This raised suspicions that were confirmed by checking the formula:
+chi squared = (( Observed - Expected) ^2) / Expected
+
+The numerator of the formula “ (( Observed - Expected) ^2) “ is the difference between observed values and expected (calculated) values, raised to the power of 2.
+
+As denominator we have the expected value, and if we have any value here that is less than 1, that will cause an inversion in the logic and that would be a mistake that would make any result unreliable and not to be trusted.
+
+The main problem here lies in the fact that python didn’t raise any error or warning to inform us that data grouping lead to the generation of invalid expected counts.
+
+Given the fact that there was no sign of validity or compliance tests in any python library I looked at, I decided to write it myself and to incorporate in it all proper test.
+
+Running my code against the same data set generated the following output:
+
+=====================================================
+CHI SQUARED - Data Type and count
+
++------------+-------------+------------+---------+-------------+-----------+---------------+
+| Column     | Type        |   Elements |   Valid |   Valid (%) |   Missing |   Missing (%) |
++============+=============+============+=========+=============+===========+===============+
+| HEMISPHERE | categorical |     384343 |  384343 |         100 |         0 |             0 |
++------------+-------------+------------+---------+-------------+-----------+---------------+
+| LAYERS     | categorical |     384343 |  384343 |         100 |         0 |             0 |
++------------+-------------+------------+---------+-------------+-----------+---------------+
+
+CHI SQUARED - Data Validation Tests
+
+TEST --> Check that both variable are 'CATEGORICAL'
+Variable: 'HEMISPHERE' - Type: 'category' (PASS)
+Variable: 'LAYERS' - Type: 'category' (PASS)
+Status --> PASS - All variables are categorical.
+
+TEST --> Check that each variable has at least 2 data groups
+Variable: 'HEMISPHERE' - Groups: '3' - Names: ['Equator', 'North', 'South'] (PASS)
+Variable: 'LAYERS' - Groups: '4' - Names: ['double', 'multi', 'none', 'single'] (PASS)
+Status --> PASS - All variables have at least 2 data groups.
+
+|                    | double    | multi     | none    | single   | Total   |
+|:-------------------|:----------|:----------|:--------|:---------|:--------|
+| Equator            | 0         | 0         | 6       | 1        | 7       |
+| Equator (expected) | 0.0625613 | 0.0150985 | 6.64064 | 0.281699 | 7       |
+| North              | 2067      | 432       | 141436  | 7181     | 151116  |
+| North (expected)   | 1350.57   | 325.946   | 143358  | 6081.32  | 151116  |
+| South              | 1368      | 397       | 223170  | 8285     | 233220  |
+| South (expected)   | 2084.36   | 503.039   | 221247  | 9385.4   | 233220  |
+| Total              | 3435      | 829       | 364612  | 15467    | 384343  |
+
+Chi Squared - Testing if all 'expected count' cells satisfy minimum requirements.
+
+Assumption --> No expected count has negative value.
+TEST: 0 (0.0%) cells with an expected count less than 0.
+Status --> PASS
+
+Assumption --> No expected count has a value of zero.
+TEST: 0 (0.0%) cells with an expected count equal to 0.
+Status --> PASS
+
+Assumption --> No expected count has a value smaller than 1.
+TEST: 3 (25.0%) cells with an expected count less than 1.
+ERROR: No reliable result can be produced with expected count less then 1.
+Status --> FAIL
+
+Assumption (for tables bigger than 2x2) --> No more than 20% of the expected counts are less than 5.
+TEST - 3 (25.0%) cells with an expected count less than 5.
+WARNING: More than 20% of the expected counts are less than 5, some other test should be used.
+Status --> FAIL
+
+DETECTED CRITICAL ERRORS:
+Not possible to perform chi squared analysis as data does not meet basic requirements.
+A change in data structure or data grouping is required.
+
+Quitting!
+=====================================================
+
+This sadly confirmed my suspicions, and I had to conclude that my data grouping logic was wrong, that any result would not be valid, and that I had to rethink how to split the variables.
+
+So I decided to split my data differently.
+Used “LATITUDE_CIRCLE_IMAGE” and divided the data as:
+- South: value from -90 to 0 (-90 included, 0 excluded)
+- North:  value from 0 to 90 (0 included , 90 included)
+This allowed the creation of a new categorical variable called HEMISPHERE.
+
+Then used the variable “NUMBER_LAYERS”  and divided the data as follows:
+no_layers: any value equal to 0
+has_layers: any value greater than 1
+Now we have again two categorical variables we can use for a chi squared analysis.
+
+Running my code again against the same data set generated the following output:
+
+=====================================================
+
+CHI SQUARED - Data Type and count
+
++------------+-------------+------------+---------+-------------+-----------+---------------+
+| Column     | Type        |   Elements |   Valid |   Valid (%) |   Missing |   Missing (%) |
++============+=============+============+=========+=============+===========+===============+
+| HEMISPHERE | categorical |     384343 |  384343 |         100 |         0 |             0 |
++------------+-------------+------------+---------+-------------+-----------+---------------+
+| LAYERS     | categorical |     384343 |  384343 |         100 |         0 |             0 |
++------------+-------------+------------+---------+-------------+-----------+---------------+
+
+CHI SQUARED - Data Validation Tests
+
+TEST --> Check that both variable are 'CATEGORICAL'
+Variable: 'HEMISPHERE' - Type: 'category' (PASS)
+Variable: 'LAYERS' - Type: 'category' (PASS)
+Status --> PASS - All variables are categorical.
+
+TEST --> Check that each variable has at least 2 data groups
+Variable: 'HEMISPHERE' - Groups: '2' - Names: ['North', 'South'] (PASS)
+Variable: 'LAYERS' - Groups: '2' - Names: ['has_layers', 'no_layers'] (PASS)
+Status --> PASS - All variables have at least 2 data groups.
+
+CHI SQUARED - Testing if all 'expected count' cells satisfy minimum requirements.
+
+Assumption --> No expected count has negative value.
+TEST: 0 (0.0%) cells with an expected count less than 0.
+Status --> PASS
+
+Assumption --> No expected count has a value of zero.
+TEST: 0 (0.0%) cells with an expected count equal to 0.
+Status --> PASS
+
+Assumption --> No expected count has a value smaller than 1.
+TEST: 0 (0.0%) cells with an expected count less than 1.
+Status --> PASS
+
+Assumption (for tables equal to 2x2) --> No expected count has a value smaller than 5.
+TEST: 0 (0.0%) cells with an expected count less than 5.
+Status --> PASS
+
+Assumption (for tables equal to 2x2) --> No expected count has a value smaller than 10.
+TEST: 0 (0.0%) cells with an expected count less than 10.
+Status --> PASS
+
+|                              | has_layers   | no_layers   | Total   |
+|:-----------------------------|:-------------|:------------|:--------|
+| North                        | 9681         | 141442      | 151123  |
+| North (expected)             | 7758.19      | 143365      | 151123  |
+| North (residual)             | 1922.81      | -1922.81    | 0       |
+| North (% deviation)          | 24.7842      | -1.3412     | -       |
+| North (% deviation, Yates)   | 24.7777      | 1.34085     | -       |
+| North (std. residual)        | 21.8301      | -5.07825    | -       |
+| North (std. residual, Yates) | 21.8244      | 5.07693     | -       |
+| North (adj. residual)        | 28.7724      | -28.7724    | -       |
+| North (chi2 contrib.)        | 476.551      | 25.7886     | -       |
+| North (chi2 contrib., Yates) | 476.304      | 25.7752     | -       |
+| North (likelihood ratio)     | 4287.05      | -3819.71    | -       |
+| South                        | 10050        | 223170      | 233220  |
+| South (expected)             | 11972.8      | 221247      | 233220  |
+| South (residual)             | -1922.81     | 1922.81     | 0       |
+| South (% deviation)          | -16.0598     | 0.869075    | -       |
+| South (% deviation, Yates)   | 16.0556      | 0.868849    | -       |
+| South (std. residual)        | -17.5727     | 4.08786     | -       |
+| South (std. residual, Yates) | 17.5681      | 4.0868      | -       |
+| South (adj. residual)        | -28.7724     | 28.7724     | -       |
+| South (chi2 contrib.)        | 308.798      | 16.7106     | -       |
+| South (chi2 contrib., Yates) | 308.638      | 16.7019     | -       |
+| South (likelihood ratio)     | -3518.81     | 3862.27     | -       |
+| Total                        | 19731        | 364612      | 384343  |
+
+===========================
+Contingency Table
+Table Size: '2x2'
+Number of cells: '4'
+Total number of elements: '384343'
+Observed minimum value: '9681.0'
+Expected minimum value: '7758.194927448'
+
+Chi Squared
+Pearson chi2: '827.8488191272725'
+Pearson chi2 (std. dev): '194.97978327'
+Degrees of freedom (df): '1'
+p-value (Pearson chi2): '4.75723400928e-182'
+
+Chi Squared - Yates Continuity Corrections
+Yates chi2: '827.4183328573012'
+Yates chi2 (std. dev): '194.878392632'
+Degrees of freedom (df): '1'
+p-value (Yates chi2): '5.90127830739e-182'
+
+Extras
+Contingency coefficient (C): '0.04636057475485791'
+Contingency coefficient corrected (C corr): '0.06556375357773177'
+Phi coefficient: '0.04641047666871529'
+Cramer's V (V): '0.04641047666871529'
+Log-Likelihood ratio (G-test): '810.8036477212431'
+=====================================================
+
+This time we have a “PASS” in all test so the grouping is correct and data is valid, but what about the chi squared value?
+
+Here the values produced by my code:
+
+Chi Squared
+Pearson chi2: '827.8488191272725'
+Pearson chi2 (std. dev): '194.97978327'
+Degrees of freedom (df): '1'
+p-value (Pearson chi2): '4.75723400928e-182'
+
+And here the value produced by python scipy library:
+
+chi squared: 827.41833285730081
+p value: 5.9012783073956634e-182
+degrees of freedom: 1
+
+And now we have a second problem, the value reported as chi squared by python IS NOT the same value obtained using the standard chi squared formula.
+
+value from standard formula:  827.8488191272725
+value from scipy: 827.41833285730081
+
+After some testing and checking python’s source code seems that scipy, for tables of size 2x2, does not provide by default the standard chi squared value but uses a modified formula to apply a “continuity correction” using Yates algorithm.
+
+Adding the relevant logic to my code and re-running it again we have a match.
+
+Using my code:
+
+Chi Squared
+Pearson chi2: '827.8488191272725'
+Pearson chi2 (std. dev): '194.97978327'
+Degrees of freedom (df): '1'
+p-value (Pearson chi2): '4.75723400928e-182'
+
+Chi Squared - Yates Continuity Corrections
+Yates chi2: '827.4183328573012'
+Yates chi2 (std. dev): '194.878392632'
+Degrees of freedom (df): '1'
+p-value (Yates chi2): '5.90127830739e-182'
+
+Using python scipy library:
+
+chi squared: 827.41833285730081
+p value: 5.9012783073956634e-182
+degrees of freedom: 1 
+
+Checking documentation for the function “chi2_contingency” revealed that there is an optional parameter to control the use of correction.
+
+So running again my code and python code we have the final results.
+
+Results running my code:
+Chi Squared
+Pearson chi2: '827.8488191272725'
+Pearson chi2 (std. dev): '194.97978327'
+Degrees of freedom (df): '1'
+p-value (Pearson chi2): '4.75723400928e-182'
+
+Chi Squared - Yates Continuity Corrections
+Yates chi2: '827.4183328573012'
+Yates chi2 (std. dev): '194.878392632'
+Degrees of freedom (df): '1'
+p-value (Yates chi2): '5.90127830739e-182'
+
+Results using python scipy chi2 funtion (correction=False)
+chi squared = 827.848819127
+df = 1
+p_value = 4.75723400928e-182
+
+Results using python scipy chi2 funtion (correction=True)
+chi squared = 827.418332857
+df = 1
+p_value = 5.9012783074e-182
+
+Now we have all the results that are matching (within precision limits).
+
+Finally we have a valid data set, valid categorical variables divided in a way that satisfies all chi squared assumptions, and a chi squared value that is correct, and I am going to use the "Pearson chi2″ value from my code, so my results can be comparable with same results obtained with other software.
+
+Chi Squared
+Pearson chi2: '827.8488191272725'
+Pearson chi2 (std. dev): '194.97978327'
+Degrees of freedom (df): '1'
+p-value (Pearson chi2): '4.75723400928e-182' 
+
+And now we can make analyse our results:
+
+Examining the association between location of each crater (variable name ‘HEMISPHERE’) and amount of layers (variable name ‘LAYERS’),  a chi-square test of independence revealed that among Mars craters, the norther hemisphere was more likely to have craters with layers than the southern hemisphere, X2=827.8488, df=1, p= 4.75723400928e-182.
+
+The df or degree of freedom we record is the number of levels of the explanatory variable -1. 
+Here the df is 1 HEMISPHERE which has 2 levels (df 2-1=1). 
+

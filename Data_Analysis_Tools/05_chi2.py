@@ -805,25 +805,34 @@ def phi_coefficient(chi2, totalelem, round_at=None):
     phi = xsqrt(chi2 / totalelem)
     if round_at:
         phi = round(phi, precision)
-    return float(phi)
-
-def contingency_coeff(chi2, totalelem, round_at=None):
-    if round_at:
-        if not isNumber(round_at):
-            raise ValueError("Contingency coeff - rounding precision '%s' is not a valid real number." % (ascii(round_at),))
-        precision = int(Decimal(str(round_at)))
-        if (precision < 0):
-            precision = 0
-    # PEARSON contingency coefficient C
-    # sqrt(chi2 / (chi2 + number total elements))
-    # to use ONLY with quadratic tables
-    # only with tables having same number of rows and columns (3x3, 4x4, etc)
-    chi2 = Decimal(str(chi2))
-    totalelem = Decimal(str(totalelem))
-    cC = xsqrt(chi2 / (chi2 + totalelem))
-    if round_at:
-        cC = round(cC, precision)
-    return float(cC)
+    phi = float(phi)
+    # Phi coefficient Interpretation
+    # Using table of Rea & Parker (1992)
+    # http://files.eric.ed.gov/fulltext/EJ955682.pdf
+    # https://c.ymcdn.com/sites/aisnet.org/resource/group/3f1cd2cf-a29b-4822-8581-7b1360e30c71/Spring_2003/kotrlikwilliamsspring2003.pdf
+    # .00 and under .10  --> Negligible association
+    # .10 and under .20  --> Weak association
+    # .20 and under .40  --> Moderate association
+    # .40 and under .60  --> Relatively strong association
+    # .60 and under .80  --> Strong association
+    # .80 and under 1.00 --> Very strong association
+    interpretation = ""
+    if (phi >= 0) and (phi < 0.1):
+        interpretation = ("Negligible association")
+    elif (phi >= 0.1) and (phi < 0.2):
+        interpretation = ("Weak association")
+    elif (phi >= 0.1) and (phi < 0.4):
+        interpretation = ("Moderate association")
+    elif (phi >= 0.1) and (phi < 0.6):
+        interpretation = ("Relatively strong association")
+    elif (phi >= 0.1) and (phi < 0.8):
+        interpretation = ("Strong association")
+    elif (phi >= 0.1) and (phi < 1):
+        interpretation = ("Very strong association")
+    elif (phi == 1):
+        interpretation = ("Perfect match")
+    final = "%s (%s)" % (phi, interpretation)
+    return final
 
 def cramer_V(chi2, totalelem, minrowcol, round_at=None):
     if round_at:
@@ -844,12 +853,57 @@ def cramer_V(chi2, totalelem, minrowcol, round_at=None):
     cramer = xsqrt(chi2 / (totalelem * t))
     if round_at:
         cramer = round(cramer, precision)
-    return float(cramer)
+    cramer = float(cramer)
+    # Cramer’s Interpretation
+    # Using table of Rea & Parker (1992)
+    # https://c.ymcdn.com/sites/aisnet.org/resource/group/3f1cd2cf-a29b-4822-8581-7b1360e30c71/Spring_2003/kotrlikwilliamsspring2003.pdf
+    # http://files.eric.ed.gov/fulltext/EJ955682.pdf
+    # .00 and under .10  --> Negligible association
+    # .10 and under .20  --> Weak association
+    # .20 and under .40  --> Moderate association
+    # .40 and under .60  --> Relatively strong association
+    # .60 and under .80  --> Strong association
+    # .80 and under 1.00 --> Very strong association
+    interpretation = ""
+    if (cramer >= 0) and (cramer < 0.1):
+        interpretation = ("Negligible association")
+    elif (cramer >= 0.1) and (cramer < 0.2):
+        interpretation = ("Weak association")
+    elif (cramer >= 0.1) and (cramer < 0.4):
+        interpretation = ("Moderate association")
+    elif (cramer >= 0.1) and (cramer < 0.6):
+        interpretation = ("Relatively strong association")
+    elif (cramer >= 0.1) and (cramer < 0.8):
+        interpretation = ("Strong association")
+    elif (cramer >= 0.1) and (cramer < 1):
+        interpretation = ("Very strong association")
+    elif (cramer == 1):
+        interpretation = ("Perfect match")
+    final = "%s (%s)" % (cramer, interpretation)
+    return final
+
+def contingency_coeff(chi2, totalelem, round_at=None):
+    if round_at:
+        if not isNumber(round_at):
+            raise ValueError("Observed Contingency coeff - rounding precision '%s' is not a valid real number." % (ascii(round_at),))
+        precision = int(Decimal(str(round_at)))
+        if (precision < 0):
+            precision = 0
+    # PEARSON contingency coefficient C
+    # sqrt(chi2 / (chi2 + number total elements))
+    # to use ONLY with quadratic tables
+    # only with tables having same number of rows and columns (3x3, 4x4, etc)
+    chi2 = Decimal(str(chi2))
+    totalelem = Decimal(str(totalelem))
+    cC = xsqrt(chi2 / (chi2 + totalelem))
+    if round_at:
+        cC = round(cC, precision)
+    return float(cC)
 
 def contingency_coeff_corr(chi2, totalelem, minrowcol, round_at=None):
     if round_at:
         if not isNumber(round_at):
-            raise ValueError("Corrented contingency coeff - rounding precision '%s' is not a valid real number." % (ascii(round_at),))
+            raise ValueError("Observed Contingency Coeff Corrented - rounding precision '%s' is not a valid real number." % (ascii(round_at),))
         precision = int(Decimal(str(round_at)))
         if (precision < 0):
             precision = 0
@@ -870,6 +924,52 @@ def contingency_coeff_corr(chi2, totalelem, minrowcol, round_at=None):
         cC_corr = round(cC_corr, precision)
     return float(cC_corr)
 
+def standardized_contingency_coeff(obeserved_contingency_coeff, nrows, ncolumns, round_at=None):
+    if round_at:
+        if not isNumber(round_at):
+            raise ValueError("Observed Contingency Coeff Corrented - rounding precision '%s' is not a valid real number." % (ascii(round_at),))
+        precision = int(Decimal(str(round_at)))
+        if (precision < 0):
+            precision = 0
+    obeserved_contingency_coeff = Decimal(str(obeserved_contingency_coeff))
+    nrows = Decimal(str(nrows))
+    ncolumns = Decimal(str(ncolumns))
+    crows = ((nrows - Decimal(str(1))) / nrows)
+    ccols = ((ncolumns - Decimal(str(1))) / ncolumns)
+    # calculate contingency coefficient maximum value
+    cont_coeff_max = ((crows * ccols) ** (Decimal(str(1))/Decimal(str(4))))
+    # calculate standardized value
+    cont_coeff_std = (obeserved_contingency_coeff / cont_coeff_max)
+    if round_at:
+        cont_coeff_std = round(cont_coeff_std, precision)
+    cont_coeff_std = float(cont_coeff_std)
+    # Standardized Contingency Coefficient Interpretation
+    # Analyzing Quantitative Data: From Description to Explanation, By Norman Blaikie, page 100
+    # https://books.google.fr/books?id=Tv_-YxqWVQ8C&printsec=frontcover#v=onepage&q&f=false
+    # .00 and under .01  --> No association
+    # .01 and under .10  --> Negligible association
+    # .10 and under .30  --> Weak association
+    # .30 and under .60  --> Moderate association
+    # .60 and under .75  --> Strong association
+    # .75 and under .99 --> Very strong association
+    # .99 and 1 --> Perfect association
+    interpretation = ""
+    if (cont_coeff_std >= 0) and (cont_coeff_std < 0.01):
+        interpretation = ("No association")
+    elif (cont_coeff_std >= 0.01) and (cont_coeff_std < 0.1):
+        interpretation = ("Negligible association")
+    elif (cont_coeff_std >= 0.10) and (cont_coeff_std < 0.30):
+        interpretation = ("Weak association")
+    elif (cont_coeff_std >= 0.30) and (cont_coeff_std < 0.60):
+        interpretation = ("Moderate association")
+    elif (cont_coeff_std >= 0.60) and (cont_coeff_std < 0.75):
+        interpretation = ("Strong association")
+    elif (cont_coeff_std >= 0.75) and (cont_coeff_std < 0.99):
+        interpretation = ("Very Strong association")
+    elif (cont_coeff_std >= 0.99) and (cont_coeff_std <= 1.0):
+        interpretation = ("Perfect association")
+    final = "%s (%s)" % (cont_coeff_std, interpretation)
+    return final
 
 def likelihood_ratio_contrib(observed, expected, round_at=None):
     if round_at:
@@ -895,7 +995,6 @@ def likelihood_ratio_contrib(observed, expected, round_at=None):
 
 
 def chi2_expected_check(nrows, ncolumns, list_all_expected_values):
-
     # set counter
     exp_neg_vals = 0
     exp_zero = 0
@@ -1038,7 +1137,7 @@ def chi2_expected_check(nrows, ncolumns, list_all_expected_values):
         return ("PASS", test_logs)
 
 
-def chi2_crosstab(variable1, variable2, dataframe, round_at=None, verbose=None):
+def chi2_crosstab(variable1, variable2, dataframe, alpha=None, round_at=None, verbose=None):
     # set rounding precision if number is valid
     if round_at:
         if not isNumber(round_at):
@@ -1046,6 +1145,16 @@ def chi2_crosstab(variable1, variable2, dataframe, round_at=None, verbose=None):
         precision = int(Decimal(str(round_at)))
         if (precision < 0):
             precision = 9
+
+    if alpha:
+        if not isNumber(alpha):
+            raise ValueError("alpha '%s' is not a valid real number between 0 and 1." % (ascii(alpha),))
+        alpha = float(Decimal(str(alpha)))
+        if (alpha < 0) or (alpha > 1):
+            alpha = 0.05
+    else:
+        alpha = 0.05
+
     # check that both data series have same amount of element
     count1 = float(dataframe[variable1].shape[0])
     count2 = float(dataframe[variable2].shape[0])
@@ -1372,6 +1481,8 @@ def chi2_crosstab(variable1, variable2, dataframe, round_at=None, verbose=None):
                 print(line)
     ###########################################################################
     # perform all calculation
+    # total number of cells
+    tot_cells = (rows * columns)
     # minimum expected value
     if round_at:
         expected_min = round(min(list_allexp), precision)
@@ -1379,7 +1490,6 @@ def chi2_crosstab(variable1, variable2, dataframe, round_at=None, verbose=None):
         expected_min = min(list_allexp)
     # minimum observed value
     observed_min = min(list_allobserved)
-    # CALCULATIONS USING RAW VALUE LISTS
     # calculate chi value - sum of all contributors - using RAW value list
     chi2 = sum(list_allchi2)
     # calculate chi value std dev
@@ -1396,21 +1506,79 @@ def chi2_crosstab(variable1, variable2, dataframe, round_at=None, verbose=None):
     p_val_yates = stats.chi2.sf(chi2_yates, df)
     # phi coefficient
     phi_coeff = phi_coefficient(chi2, totalelem)
-    # contingency coefficient C
-    cont_coeff = contingency_coeff(chi2, totalelem)
-    # total number of cells
-    tot_cells = (rows * columns)
-    if (rows < columns):
-        # cramer's V
-        cramerV = cramer_V(chi2, totalelem, rows)
-        # corrected contingency coefficient
-        cont_coeff_corr = contingency_coeff_corr(chi2, totalelem, rows)
-    else:
-        # cramer's V
-        cramerV = cramer_V(chi2, totalelem, columns)
-        # corrected contingency coefficient
-        cont_coeff_corr = contingency_coeff_corr(chi2, totalelem, columns)
 
+    # contingency coefficient C
+    obs_cont_coeff = contingency_coeff(chi2, totalelem)
+    if (rows < columns):
+        # corrected contingency coefficient
+        obs_cont_coeff_corr = contingency_coeff_corr(chi2, totalelem, rows)
+    else:
+        # corrected contingency coefficient
+        obs_cont_coeff_corr = contingency_coeff_corr(chi2, totalelem, columns)
+
+    if (rows == columns):
+        cont_coeff_std = standardized_contingency_coeff(obs_cont_coeff, rows, columns)
+        cont_coeff_std_corr = standardized_contingency_coeff(obs_cont_coeff_corr, rows, columns)
+
+
+
+    # cramer's V
+    if (rows < columns):
+        cramerV = cramer_V(chi2, totalelem, rows)
+    else:
+        cramerV = cramer_V(chi2, totalelem, columns)
+
+    # chi squared - interpretation
+    # http://www.itl.nist.gov/div898/handbook/eda/section3/eda3674.htm
+    # upper tail, one sided - we use alpha
+    chi2_ut_1s = alpha
+    # calculate chi 2 critical value
+    chi2_CV_ut_1s = stats.chi2.isf(chi2_ut_1s, df)
+    # check if we can accept or reject null hypothesis  - chi squared
+    if (chi2 > chi2_CV_ut_1s):
+        chi2_iterp_ut_1s = "Rejected"
+    else:
+        chi2_iterp_ut_1s = "Accepted"
+    # check if we can accept or reject null hypothesis  - chi squared - YATES
+    if (chi2_yates > chi2_CV_ut_1s):
+        chi2_iterp_ut_1s_yates = "Rejected"
+    else:
+        chi2_iterp_ut_1s_yates = "Accepted"
+
+    # lower tail, one sided - we use abs(alpha-1)
+    chi2_lt_1s = abs(alpha-1)
+    # calculater chi 2 critical value
+    chi2_CV_lt_1s = stats.chi2.isf(chi2_lt_1s, df)
+    # check if we can accept or reject null hypothesis  - chi squared
+    if (chi2 < chi2_CV_lt_1s):
+        chi2_iterp_lt_1s = "Rejected"
+    else:
+        chi2_iterp_lt_1s = "Accepted"
+    # check if we can accept or reject null hypothesis  - chi squared - YATES
+    if (chi2_yates < chi2_CV_lt_1s):
+        chi2_iterp_lt_1s_yates = "Rejected"
+    else:
+        chi2_iterp_lt_1s_yates = "Accepted"
+
+    # two sided - we use (alpha/2) for upper tail
+    chi2_ut_2s = (alpha/2)
+    # two sided - we use (abs(1-(alpha/2))) for lower tail
+    chi2_lt_2s = (abs(1-(alpha/2)))
+    # calculater chi 2 critical value
+    chi2_CV_ut_2s = stats.chi2.isf(chi2_ut_2s, df)
+    chi2_CV_lt_2s = stats.chi2.isf(chi2_lt_2s, df)
+    # check if we can accept or reject null hypothesis  - chi squared
+    if (chi2 < chi2_CV_lt_2s) or (chi2 > chi2_CV_ut_2s):
+        chi2_iterp_2s = "Rejected"
+    else:
+        chi2_iterp_2s = "Accepted"
+    # check if we can accept or reject null hypothesis  - chi squared - YATES
+    if (chi2_yates < chi2_CV_lt_2s) or (chi2 > chi2_CV_ut_2s):
+        chi2_iterp_2s_yates = "Rejected"
+    else:
+        chi2_iterp_2s_yates = "Accepted"
+
+    ###########################################################################
     # add all results to list for later printing
     all_details = list()
     all_details.append("\n===========================")
@@ -1420,20 +1588,41 @@ def chi2_crosstab(variable1, variable2, dataframe, round_at=None, verbose=None):
     all_details.append("Total number of elements: '%s'" % (totalelem,))
     all_details.append("Observed minimum value: '%s'" % (observed_min,))
     all_details.append("Expected minimum value: '%s'" % (expected_min,))
+
     all_details.append("\nChi Squared")
     all_details.append("Pearson chi2: '%s'" % (chi2,))
     all_details.append("Pearson chi2 (std. dev): '%s'" % (chi2_stdev,))
     all_details.append("Degrees of freedom (df): '%s'" % (df,))
     all_details.append("p-value (Pearson chi2): '%s'" % (p_val,))
+    all_details.append("Critical value, Upper tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_ut_1s))
+    all_details.append("Critical value, Lower tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_lt_1s))
+    all_details.append("Critical value, two-sided (alpha=%s, df=%s, value: %s,%s" % (chi2_ut_2s, df, chi2_CV_lt_2s, chi2_CV_ut_2s))
+    all_details.append("Pearson chi2, Null hypothesis, Upper tail, one-sided: '%s'" % (chi2_iterp_ut_1s,))
+    all_details.append("Pearson chi2, Null hypothesis, Lower tail, one-sided: '%s'" % (chi2_iterp_lt_1s,))
+    all_details.append("Pearson chi2, Null hypothesis, Two-sided: '%s'" % (chi2_iterp_2s,))
+
     all_details.append("\nChi Squared - Yates Continuity Corrections")
     all_details.append("Yates chi2: '%s'" % (chi2_yates,))
     all_details.append("Yates chi2 (std. dev): '%s'" % (chi2_stdev_yates,))
     all_details.append("Degrees of freedom (df): '%s'" % (df,))
     all_details.append("p-value (Yates chi2): '%s'" % (p_val_yates,))
+    all_details.append("Critical value, Upper tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_ut_1s))
+    all_details.append("Critical value, Lower tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_lt_1s))
+    all_details.append("Critical value, two-sided (alpha=%s, df=%s, value: %s,%s" % (chi2_ut_2s, df, chi2_CV_lt_2s, chi2_CV_ut_2s))
+    all_details.append("Yates chi2, Null hypothesis, Upper tail, one-sided: '%s'" % (chi2_iterp_ut_1s_yates,))
+    all_details.append("Yates chi2, Null hypothesis, Lower tail, one-sided: '%s'" % (chi2_iterp_lt_1s_yates,))
+    all_details.append("Yates chi2, Null hypothesis, Two-tailed: '%s'" % (chi2_iterp_2s_yates,))
+
+    if (rows == columns):
+        all_details.append("\nContingency coefficient")
+        all_details.append("Observed contingency coefficient (C): '%s'" % (obs_cont_coeff,))
+        all_details.append("Observed contingency coefficient corrected (C corr): '%s'" % (obs_cont_coeff_corr,))
+        all_details.append("Standardized contingency coefficient (C std): '%s'" % (cont_coeff_std,))
+        all_details.append("Standardized contingency coefficient corrected (C corr std): '%s'" % (cont_coeff_std_corr,))
+
     all_details.append("\nExtras")
-    all_details.append("Contingency coefficient (C): '%s'" % (cont_coeff,))
-    all_details.append("Contingency coefficient corrected (C corr): '%s'" % (cont_coeff_corr,))
-    all_details.append("Phi coefficient: '%s'" % (phi_coeff,))
+    if (rows == 2) and (columns == 2):
+        all_details.append("Phi coefficient: '%s'" % (phi_coeff,))
     all_details.append("Cramer's V (V): '%s'" % (cramerV,))
     all_details.append("Log-Likelihood ratio (G-test): '%s'" % (likelihood_ratio,))
     all_details.append("===========================\n")
@@ -1445,8 +1634,7 @@ def chi2_crosstab(variable1, variable2, dataframe, round_at=None, verbose=None):
         for line in all_details:
             print(line)
 
-    return (chi2, p_val, df)
-
+    return (chi2, p_val, df, chi2_iterp_2s)
 
 ###############################################################################
 
@@ -1572,62 +1760,6 @@ print()
 
 '''
 
-'''
-
-Performing ANOVA analysys between 'DIAM_CIRCLE_IMAGE' and 'HEMISPHERE'
-
-                            OLS Regression Results
-==============================================================================
-Dep. Variable:      DIAM_CIRCLE_IMAGE   R-squared:                       0.002
-Model:                            OLS   Adj. R-squared:                  0.002
-Method:                 Least Squares   F-statistic:                     302.8
-Date:                Thu, 19 May 2016   Prob (F-statistic):          4.13e-132
-Time:                        16:27:25   Log-Likelihood:            -1.3717e+06
-No. Observations:              384343   AIC:                         2.743e+06
-Df Residuals:                  384340   BIC:                         2.743e+06
-Df Model:                           2
-Covariance Type:            nonrobust
-==========================================================================================
-                             coef    std err          t      P>|t|      [95.0% Conf. Int.]
-------------------------------------------------------------------------------------------
-Intercept                  2.4529      3.245      0.756      0.450        -3.907     8.813
-C(HEMISPHERE)[T.North]     0.6805      3.245      0.210      0.834        -5.680     7.041
-C(HEMISPHERE)[T.South]     1.3781      3.245      0.425      0.671        -4.982     7.738
-==============================================================================
-Omnibus:                   915159.189   Durbin-Watson:                   0.223
-Prob(Omnibus):                  0.000   Jarque-Bera (JB):      58153754662.569
-Skew:                          23.550   Prob(JB):                         0.00
-Kurtosis:                    1908.032   Cond. No.                         503.
-==============================================================================
-
-Warnings:
-[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
-
-Means for 'DIAM_CIRCLE_IMAGE' by Hemisphere
-            DIAM_CIRCLE_IMAGE
-HEMISPHERE
-Equator              2.452857
-North                3.133406
-South                3.830986
-
-Standard Deviation for 'DIAM_CIRCLE_IMAGE' by Hemisphere
-            DIAM_CIRCLE_IMAGE
-HEMISPHERE
-Equator              1.555310
-North                6.989578
-South                9.476899
-
-Performing Tukey HSDT, or Honestly Significant Difference Test.
-Multiple Comparison of Means - Tukey HSD,FWER=0.05
-=============================================
- group1 group2 meandiff  lower  upper  reject
----------------------------------------------
-Equator North   0.6805  -6.9248 8.2859 False
-Equator South   1.3781  -6.2272 8.9834 False
- North  South   0.6976   0.6311 0.764   True
----------------------------------------------
-'''
-
 ###############################################################################
 # chi2- "HEMISPHERE" ~ "LAYERS"
 chi2_sub = data[["HEMISPHERE", "LAYERS"]]
@@ -1645,13 +1777,18 @@ chi2_testtype(var1, var2, subchi2)
 chi2_testlen(var1, var2, subchi2)
 
 # crosstab(var1, var2, subchi2)
-chi_value, p_value, degrees_freedom = chi2_crosstab(var1, var2, subchi2, round_at=9, verbose=True)
+chi_value, p_value, degrees_freedom, hypothesis = chi2_crosstab(var1, var2,
+                                                    subchi2,
+                                                    alpha=0.05,
+                                                    round_at=9,
+                                                    verbose=True)
+
 
 print("chi squared = %s" % (chi_value,))
 print("df = %s" % (degrees_freedom,))
 print("p_value = %s" % (p_value,))
+print("Null hypothesis = %s" % (hypothesis,))
 print()
-
 
 
 from scipy.stats import chi2_contingency
@@ -1671,3 +1808,4 @@ print("chi squared = %s" % (chi2,))
 print("df = %s" % (dof,))
 print("p_value = %s" % (p,))
 print()
+

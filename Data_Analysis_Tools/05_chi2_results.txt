@@ -202,18 +202,34 @@ Pearson chi2: '827.8488191272725'
 Pearson chi2 (std. dev): '194.97978327'
 Degrees of freedom (df): '1'
 p-value (Pearson chi2): '4.75723400928e-182'
+Critical value, Upper tail, one-sided (alpha=0.05, df=1): 3.84145882069
+Critical value, Lower tail, one-sided (alpha=0.05, df=1): 0.00393214000002
+Critical value, two-sided (alpha=0.025, df=1, value: 0.000982069117175,5.02388618731
+Pearson chi2, Null hypothesis, Upper tail, one-sided: 'Rejected'
+Pearson chi2, Null hypothesis, Lower tail, one-sided: 'Accepted'
+Pearson chi2, Null hypothesis, Two-sided: 'Rejected'
 
 Chi Squared - Yates Continuity Corrections
 Yates chi2: '827.4183328573012'
 Yates chi2 (std. dev): '194.878392632'
 Degrees of freedom (df): '1'
 p-value (Yates chi2): '5.90127830739e-182'
+Critical value, Upper tail, one-sided (alpha=0.05, df=1): 3.84145882069
+Critical value, Lower tail, one-sided (alpha=0.05, df=1): 0.00393214000002
+Critical value, two-sided (alpha=0.025, df=1, value: 0.000982069117175,5.02388618731
+Yates chi2, Null hypothesis, Upper tail, one-sided: 'Rejected'
+Yates chi2, Null hypothesis, Lower tail, one-sided: 'Accepted'
+Yates chi2, Null hypothesis, Two-sided: 'Rejected'
+
+Contingency coefficient
+Observed contingency coefficient (C): '0.04636057475485791'
+Observed contingency coefficient corrected (C corr): '0.06556375357773177'
+Standardized contingency coefficient (C std): '0.06556375357773178 (Negligible association)'
+Standardized contingency coefficient corrected (C corr std): '0.0927211495097158 (Negligible association)'
 
 Extras
-Contingency coefficient (C): '0.04636057475485791'
-Contingency coefficient corrected (C corr): '0.06556375357773177'
-Phi coefficient: '0.04641047666871529'
-Cramer's V (V): '0.04641047666871529'
+Phi coefficient: '0.04641047666871529 (Negligible association)'
+Cramer's V (V): '0.04641047666871529 (Negligible association)'
 Log-Likelihood ratio (G-test): '810.8036477212431'
 =====================================================
 

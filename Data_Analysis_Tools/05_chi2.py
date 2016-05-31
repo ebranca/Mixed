@@ -1498,8 +1498,6 @@ def chi2_crosstab(variable1, variable2, dataframe, alpha=None, round_at=None, ve
     chi2_yates = sum(list_allchi2_yates)
     # calculate chi value std dev - yates correction
     chi2_stdev_yates = np.array(list_allchi2_yates).std()
-    # Likelihood ratio (G-test) - using RAW value list
-    likelihood_ratio = (sum(list_alllikelihood))
     # probability value
     p_val = stats.chi2.sf(chi2, df)
     # probability value - YATES
@@ -1515,12 +1513,9 @@ def chi2_crosstab(variable1, variable2, dataframe, alpha=None, round_at=None, ve
     else:
         # corrected contingency coefficient
         obs_cont_coeff_corr = contingency_coeff_corr(chi2, totalelem, columns)
-
     if (rows == columns):
         cont_coeff_std = standardized_contingency_coeff(obs_cont_coeff, rows, columns)
         cont_coeff_std_corr = standardized_contingency_coeff(obs_cont_coeff_corr, rows, columns)
-
-
 
     # cramer's V
     if (rows < columns):
@@ -1528,6 +1523,8 @@ def chi2_crosstab(variable1, variable2, dataframe, alpha=None, round_at=None, ve
     else:
         cramerV = cramer_V(chi2, totalelem, columns)
 
+    ###########################################################################
+    # Interpret results
     # chi squared - interpretation
     # http://www.itl.nist.gov/div898/handbook/eda/section3/eda3674.htm
     # upper tail, one sided - we use alpha
@@ -1544,7 +1541,6 @@ def chi2_crosstab(variable1, variable2, dataframe, alpha=None, round_at=None, ve
         chi2_iterp_ut_1s_yates = "Rejected"
     else:
         chi2_iterp_ut_1s_yates = "Accepted"
-
     # lower tail, one sided - we use abs(alpha-1)
     chi2_lt_1s = abs(alpha-1)
     # calculater chi 2 critical value
@@ -1559,7 +1555,6 @@ def chi2_crosstab(variable1, variable2, dataframe, alpha=None, round_at=None, ve
         chi2_iterp_lt_1s_yates = "Rejected"
     else:
         chi2_iterp_lt_1s_yates = "Accepted"
-
     # two sided - we use (alpha/2) for upper tail
     chi2_ut_2s = (alpha/2)
     # two sided - we use (abs(1-(alpha/2))) for lower tail
@@ -1578,6 +1573,25 @@ def chi2_crosstab(variable1, variable2, dataframe, alpha=None, round_at=None, ve
     else:
         chi2_iterp_2s_yates = "Accepted"
 
+    # Likelihood ratio (G-test) - using RAW value list
+    likelihood_ratio = (sum(list_alllikelihood))
+    # lower tail, one sided
+    if (likelihood_ratio < chi2_CV_lt_1s):
+        likelihood_ratio_iterp_lt_1s = "Rejected"
+    else:
+        likelihood_ratio_iterp_lt_1s = "Accepted"
+    # upper tail, one sided
+    if (likelihood_ratio > chi2_CV_ut_1s):
+        likelihood_ratio_iterp_ut_1s = "Rejected"
+    else:
+        likelihood_ratio_iterp_ut_1s = "Accepted"
+    # two sided - we use (alpha/2) for upper tail
+    if (likelihood_ratio < chi2_CV_lt_2s) or (likelihood_ratio > chi2_CV_ut_2s):
+        likelihood_ratio_iterp_2s = "Rejected"
+    else:
+        likelihood_ratio_iterp_2s = "Accepted"
+
+
     ###########################################################################
     # add all results to list for later printing
     all_details = list()
@@ -1594,11 +1608,11 @@ def chi2_crosstab(variable1, variable2, dataframe, alpha=None, round_at=None, ve
     all_details.append("Pearson chi2 (std. dev): '%s'" % (chi2_stdev,))
     all_details.append("Degrees of freedom (df): '%s'" % (df,))
     all_details.append("p-value (Pearson chi2): '%s'" % (p_val,))
-    all_details.append("Critical value, Upper tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_ut_1s))
     all_details.append("Critical value, Lower tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_lt_1s))
+    all_details.append("Critical value, Upper tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_ut_1s))
     all_details.append("Critical value, two-sided (alpha=%s, df=%s, value: %s,%s" % (chi2_ut_2s, df, chi2_CV_lt_2s, chi2_CV_ut_2s))
-    all_details.append("Pearson chi2, Null hypothesis, Upper tail, one-sided: '%s'" % (chi2_iterp_ut_1s,))
     all_details.append("Pearson chi2, Null hypothesis, Lower tail, one-sided: '%s'" % (chi2_iterp_lt_1s,))
+    all_details.append("Pearson chi2, Null hypothesis, Upper tail, one-sided: '%s'" % (chi2_iterp_ut_1s,))
     all_details.append("Pearson chi2, Null hypothesis, Two-sided: '%s'" % (chi2_iterp_2s,))
 
     all_details.append("\nChi Squared - Yates Continuity Corrections")
@@ -1606,12 +1620,21 @@ def chi2_crosstab(variable1, variable2, dataframe, alpha=None, round_at=None, ve
     all_details.append("Yates chi2 (std. dev): '%s'" % (chi2_stdev_yates,))
     all_details.append("Degrees of freedom (df): '%s'" % (df,))
     all_details.append("p-value (Yates chi2): '%s'" % (p_val_yates,))
-    all_details.append("Critical value, Upper tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_ut_1s))
     all_details.append("Critical value, Lower tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_lt_1s))
+    all_details.append("Critical value, Upper tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_ut_1s))
     all_details.append("Critical value, two-sided (alpha=%s, df=%s, value: %s,%s" % (chi2_ut_2s, df, chi2_CV_lt_2s, chi2_CV_ut_2s))
-    all_details.append("Yates chi2, Null hypothesis, Upper tail, one-sided: '%s'" % (chi2_iterp_ut_1s_yates,))
     all_details.append("Yates chi2, Null hypothesis, Lower tail, one-sided: '%s'" % (chi2_iterp_lt_1s_yates,))
+    all_details.append("Yates chi2, Null hypothesis, Upper tail, one-sided: '%s'" % (chi2_iterp_ut_1s_yates,))
     all_details.append("Yates chi2, Null hypothesis, Two-tailed: '%s'" % (chi2_iterp_2s_yates,))
+
+    all_details.append("\nChi Squared - Log-Likelihood ratio")
+    all_details.append("Log-Likelihood ratio (G-test): '%s'" % (likelihood_ratio,))
+    all_details.append("Critical value, Lower tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_lt_1s))
+    all_details.append("Critical value, Upper tail, one-sided (alpha=%s, df=%s): %s" % (alpha, df, chi2_CV_ut_1s))
+    all_details.append("Critical value, two-sided (alpha=%s, df=%s, value: %s,%s" % (chi2_ut_2s, df, chi2_CV_lt_2s, chi2_CV_ut_2s))
+    all_details.append("G-test, Null hypothesis, Lower tail, one-sided: '%s'" % (likelihood_ratio_iterp_lt_1s,))
+    all_details.append("G-test, Null hypothesis, Upper tail, one-sided: '%s'" % (likelihood_ratio_iterp_ut_1s,))
+    all_details.append("G-test, Null hypothesis, Two-tailed: '%s'" % (likelihood_ratio_iterp_2s,))
 
     if (rows == columns):
         all_details.append("\nContingency coefficient")
@@ -1620,11 +1643,10 @@ def chi2_crosstab(variable1, variable2, dataframe, alpha=None, round_at=None, ve
         all_details.append("Standardized contingency coefficient (C std): '%s'" % (cont_coeff_std,))
         all_details.append("Standardized contingency coefficient corrected (C corr std): '%s'" % (cont_coeff_std_corr,))
 
-    all_details.append("\nExtras")
+    all_details.append("\nMeasures of Associations")
     if (rows == 2) and (columns == 2):
         all_details.append("Phi coefficient: '%s'" % (phi_coeff,))
     all_details.append("Cramer's V (V): '%s'" % (cramerV,))
-    all_details.append("Log-Likelihood ratio (G-test): '%s'" % (likelihood_ratio,))
     all_details.append("===========================\n")
 
     if (verbose == True):
@@ -1729,6 +1751,8 @@ data["LAYERS"] = data["LAYERS"].astype('category')
 ###############################################################################
 
 '''
+# WEEK 1
+
 import statsmodels.formula.api as smf
 
 # ANOVA- "DIAM_CIRCLE_IMAGE" ~ "HEMISPHERE"
@@ -1757,10 +1781,11 @@ results2 = mc1.tukeyhsd()
 print("Performing Tukey HSDT, or Honestly Significant Difference Test.")
 print(results2.summary())
 print()
-
 '''
-
 ###############################################################################
+
+# WEEK 2
+
 # chi2- "HEMISPHERE" ~ "LAYERS"
 chi2_sub = data[["HEMISPHERE", "LAYERS"]]
 
@@ -1783,7 +1808,6 @@ chi_value, p_value, degrees_freedom, hypothesis = chi2_crosstab(var1, var2,
                                                     round_at=9,
                                                     verbose=True)
 
-
 print("chi squared = %s" % (chi_value,))
 print("df = %s" % (degrees_freedom,))
 print("p_value = %s" % (p_value,))
@@ -1793,7 +1817,6 @@ print()
 
 from scipy.stats import chi2_contingency
 ct1 = pd.crosstab(chi2_sub["HEMISPHERE"], chi2_sub["LAYERS"])
-
 #cs1 = chi2_contingency(ct1)
 chi2, p, dof, ex = chi2_contingency(ct1, correction=False)
 print("Results using python scipy chi2 funtion (correction=False)")
@@ -1801,7 +1824,6 @@ print("chi squared = %s" % (chi2,))
 print("df = %s" % (dof,))
 print("p_value = %s" % (p,))
 print()
-
 chi2, p, dof, ex = chi2_contingency(ct1, correction=True)
 print("Results using python scipy chi2 funtion (correction=True)")
 print("chi squared = %s" % (chi2,))

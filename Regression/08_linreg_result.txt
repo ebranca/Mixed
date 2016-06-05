@@ -1,0 +1,27 @@
+Performing ANOVA analysys between 'DEPTH_RIMFLOOR_TOPOG' and 'DIAM_CENTERED'
+
+                             OLS Regression Results                             
+================================================================================
+Dep. Variable:     DEPTH_RIMFLOOR_TOPOG   R-squared:                       0.344
+Model:                              OLS   Adj. R-squared:                  0.344
+Method:                   Least Squares   F-statistic:                 2.018e+05
+Date:                  Sun, 05 Jun 2016   Prob (F-statistic):               0.00
+Time:                          21:58:51   Log-Likelihood:             1.1503e+05
+No. Observations:                384343   AIC:                        -2.301e+05
+Df Residuals:                    384341   BIC:                        -2.300e+05
+Df Model:                             1                                         
+Covariance Type:              nonrobust                                         
+=================================================================================
+                    coef    std err          t      P>|t|      [95.0% Conf. Int.]
+---------------------------------------------------------------------------------
+Intercept         0.0758      0.000    262.096      0.000         0.075     0.076
+DIAM_CENTERED     0.0151   3.37e-05    449.169      0.000         0.015     0.015
+==============================================================================
+Omnibus:                   390327.615   Durbin-Watson:                   1.276
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):       4086668077.223
+Skew:                          -3.506   Prob(JB):                         0.00
+Kurtosis:                     508.113   Cond. No.                         8.59
+==============================================================================
+
+Warnings:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.

@@ -2225,6 +2225,18 @@ print()
 print(results1.summary())
 print()
 
+# calculate mean value of the series
+nsum = 0
+count = 0
+for num in data["DIAM_CENTERED"]:
+    nsum = (Decimal(str(nsum)) + Decimal(str(num)))
+    count = count + 1
+nmean = (Decimal(str(nsum)) / Decimal(str(count)))
+nmean = float(nmean)
+print()
+print("Data series 'DIAM_CENTERED' has mean %s" % (nmean,))
+print()
+
 # print scatter plot
 fig, ax = plt.subplots(figsize=(10, 7))
 ax.set_title("Crater Diameter (km) -> Crater Depth (km)",fontsize=14)
@@ -2233,5 +2245,4 @@ ax.set_ylabel("Crater Depth (km)",fontsize=12)
 ax.scatter(data.DIAM_CENTERED, data.DEPTH_RIMFLOOR_TOPOG, s=5)
 plt.show()
 plt.close()
-
 

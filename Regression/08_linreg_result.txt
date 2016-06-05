@@ -6,7 +6,7 @@ Dep. Variable:     DEPTH_RIMFLOOR_TOPOG   R-squared:                       0.344
 Model:                              OLS   Adj. R-squared:                  0.344
 Method:                   Least Squares   F-statistic:                 2.018e+05
 Date:                  Sun, 05 Jun 2016   Prob (F-statistic):               0.00
-Time:                          21:58:51   Log-Likelihood:             1.1503e+05
+Time:                          22:09:35   Log-Likelihood:             1.1503e+05
 No. Observations:                384343   AIC:                        -2.301e+05
 Df Residuals:                    384341   BIC:                        -2.300e+05
 Df Model:                             1                                         
@@ -25,3 +25,6 @@ Kurtosis:                     508.113   Cond. No.                         8.59
 
 Warnings:
 [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+
+Data series 'DIAM_CENTERED' has mean -2.4230247981620582e-12

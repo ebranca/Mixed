@@ -2209,7 +2209,7 @@ for num in data["DIAM_CIRCLE_IMAGE"]:
     count = count + 1
 nmean = (Decimal(str(nsum)) / Decimal(str(count)))
 nmean = float(nmean)
-print(nmean)
+#print(nmean)
 
 # create new series
 data["DIAM_CENTERED"] = (data["DIAM_CIRCLE_IMAGE"] - nmean)
